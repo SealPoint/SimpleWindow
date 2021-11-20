@@ -7,12 +7,14 @@
 #define MAX_LOADSTRING 100
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
+#define WINDOW_BORDER_WIDTH 6
 #define WINDOW_CORNER_RADIUS 8
 
 // Global Variables:
 HWND hWnd;										// window handle
 HRGN hRgn;										// Window's clipping region
-HBRUSH hBackgroundBrush;							// Background color brush
+HBRUSH hBackgroundBrush;						// Background color brush
+HBRUSH hBorderBrush;							// Border brush
 HINSTANCE hInst;								// current instance
 TCHAR szTitle[MAX_LOADSTRING];					// The title bar text
 TCHAR szWindowClass[MAX_LOADSTRING];			// the main window class name
@@ -24,6 +26,7 @@ LRESULT CALLBACK	WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK	About(HWND, UINT, WPARAM, LPARAM);
 void UpdateClippingRegion (int width, int height);
 
+//===================================================================================
 int APIENTRY _tWinMain (HINSTANCE hInstance,
                         HINSTANCE hPrevInstance,
                         LPTSTR    lpCmdLine,
@@ -66,6 +69,7 @@ int APIENTRY _tWinMain (HINSTANCE hInstance,
 	return (int) msg.wParam;
 }
 
+//===================================================================================
 //
 //  FUNCTION: MyRegisterClass()
 //
@@ -82,6 +86,7 @@ int APIENTRY _tWinMain (HINSTANCE hInstance,
 ATOM MyRegisterClass (HINSTANCE hInstance)
 {
 	hBackgroundBrush = ::CreateSolidBrush(RGB(118, 182, 252));
+	hBorderBrush = ::CreateSolidBrush(RGB(0, 0, 255));
 
 	WNDCLASSEX wcex = { 0 };
 
@@ -98,6 +103,7 @@ ATOM MyRegisterClass (HINSTANCE hInstance)
 	return RegisterClassEx(&wcex);
 }
 
+//===================================================================================
 //
 //   FUNCTION: InitInstance(HINSTANCE, int)
 //
@@ -137,6 +143,7 @@ BOOL InitInstance (HINSTANCE hInstance, int nCmdShow)
    return TRUE;
 }
 
+//===================================================================================
 void UpdateClippingRegion (int width, int height)
 {
     HDC hdc = ::GetDC(hWnd);
@@ -184,6 +191,7 @@ void UpdateClippingRegion (int width, int height)
     ::ReleaseDC(hWnd, hdc);
 }
 
+//===================================================================================
 LRESULT OnCreate (WPARAM wParam, LPARAM lParam)
 {
 	CREATESTRUCTA* createParams = (CREATESTRUCTA*)lParam;
@@ -192,6 +200,29 @@ LRESULT OnCreate (WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
+//===================================================================================
+void DrawBorder (HDC hdc, int width, int height)
+{
+    RECT rect;
+    rect.left = 0;
+    rect.top = 0;
+    rect.right = WINDOW_BORDER_WIDTH - 1;
+    rect.bottom = height - 1;
+    ::FillRect(hdc, &rect, hBorderBrush);
+
+    rect.top = height - WINDOW_BORDER_WIDTH;
+    rect.right = width - 1;
+    rect.bottom = height - 1;
+    ::FillRect(hdc, &rect, hBorderBrush);
+
+    rect.left = width - WINDOW_BORDER_WIDTH;
+    rect.top = 0;
+    rect.right = width - 1;
+    rect.bottom = height - 1;
+    ::FillRect(hdc, &rect, hBorderBrush);
+}
+
+
 void OnPaint (HDC hdc)
 {
 	::SetBkMode(hdc, TRANSPARENT);
@@ -199,6 +230,11 @@ void OnPaint (HDC hdc)
 	RECT rect;
 	::GetClientRect(hWnd, &rect);
     ::FillRect(hdc, &rect, hBackgroundBrush);
+
+	::GetWindowRect(hWnd, &rect);
+	DrawBorder(hdc,
+			   rect.right - rect.left, // width
+			   rect.bottom - rect.top); // height
 }
 
 //
