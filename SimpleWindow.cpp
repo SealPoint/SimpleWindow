@@ -66,8 +66,6 @@ int APIENTRY _tWinMain (HINSTANCE hInstance,
 	return (int) msg.wParam;
 }
 
-
-
 //
 //  FUNCTION: MyRegisterClass()
 //
